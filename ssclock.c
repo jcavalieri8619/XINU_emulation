@@ -1,0 +1,55 @@
+/* ssclock.c - stopclk, strtclk */
+
+
+#include <conf.h>
+#include <kernel.h>
+#include <proc.h>
+#include <q.h>
+#include <sleep.h>
+
+
+/*------------------------------------------------------------------------
+ *  stopclk  --  put the clock in defer mode
+ *------------------------------------------------------------------------
+ */
+int stopclk( )
+{
+    defclk++;
+    return;
+}
+
+
+/*------------------------------------------------------------------------
+ *  strtclk  --  take the clock out of defer mode
+ *------------------------------------------------------------------------
+ */
+int strtclk( )
+{
+
+    int makeup;
+    int next;
+    sigset_t PS;
+    disable( &PS );
+    if ( defclk <= 0 || --defclk > 0 ) {
+        restore( &PS );
+        return;
+    }
+    makeup = clkdiff;
+    preempt -= makeup;
+    clkdiff = 0;
+    if ( slnempty ) {
+        for ( next = firstid( clockq );
+              next < NPROC && q[next].qkey < makeup;
+              next = q[next].qnext ) {
+            makeup -= q[next].qkey;
+            q[next].qkey = 0;
+        }
+        if ( next < NPROC )
+            q[next].qkey -= makeup;
+        wakeup( );
+    }
+    if ( preempt <= 0 )
+        resched( );
+    restore( &PS );
+    return;
+}

@@ -16,12 +16,13 @@ LOCAL int newsem( );
  */
 SYSCALL screate( int count ) /* initial count (>=0)          */
 {
-    char ps;
+
     int sem;
     sigset_t PS;
     disable( &PS );
     if ( count < 0 || ( sem = newsem( ) ) == SYSERR ) {
         restore( &PS );
+        handle_error( "screate" );
         return (SYSERR );
     }
     semaph[sem].semcnt = count;

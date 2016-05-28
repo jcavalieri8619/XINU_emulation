@@ -73,15 +73,14 @@ void funcA( int sem, int arg )
     unsigned len;
     char str[BUFFLEN];
 
-    char strnum[3] = { 0, NULLCH, NULLCH };
+    memset( str, 0, BUFFLEN );
+    len = sprintf( str, "A: pid %d alive\n", getpid( ) );
 
-    strnum[0] = ( getpid( ) + 48 );
-    len = genoutput( str, "A: process A with pid", strnum, " alive\n" );
     write( CONSOLE, str, len );
 
-    strnum[0] = ( ( sem / 10 ) + 48 );
-    strnum[1] = ( ( sem % 10 ) + 48 );
-    len = genoutput( str, "A: about to wait on semid ", strnum, "\n" );
+
+    len = sprintf( str, "A: wait semid %d\n", sem );
+
     write( CONSOLE, str, len );
 
 
@@ -89,19 +88,22 @@ void funcA( int sem, int arg )
     if ( wait( sem ) == SYSERR )
         return;
 
-    len = genoutput( str, "A: awake from semid ", strnum,
-                     "; now waiting for msg\n" );
+
+    len = sprintf( str, "A: awake semid %d\n", sem );
     write( CONSOLE, str, len );
-    strnum[1] = NULLCH;
+
 
 
     short msg;
     if ( ( msg = receive( ) ) == SYSERR )
         return;
 
-    strnum[0] = ( msg + 48 );
-    len = genoutput( str, "A: just received message ", strnum,
-                     "; now terminating\n" );
+    len = sprintf( str, "A: rcved message %d\n", msg );
+
+    write( CONSOLE, str, len );
+
+    len = sprintf( str, "A: finished\n" );
+
     write( CONSOLE, str, len );
 
     return;
@@ -116,37 +118,34 @@ void funcB( int sem, int pid )
 
     unsigned len;
     char str[BUFFLEN];
-    char strnum[3] = { 0, NULLCH, NULLCH };
+    memset( str, 0, BUFFLEN );
 
-    strnum[0] = ( getpid( ) + 48 );
-    len = genoutput( str, "B: process B with pid ", strnum, " alive\n" );
+    len = sprintf( str, "B: pid %d alive\n", getpid( ) );
+
     write( CONSOLE, str, len );
 
-    len = genoutput( str, "B: going to sleep for 2 sec ", "", "\n" );
+    len = sprintf( str, "B: sleep 2 sec\n" );
     write( CONSOLE, str, len );
 
     if ( sleep( 2 ) == SYSERR )
         return;
 
-    strnum[0] = ( ( sem / 10 ) + 48 );
-    strnum[1] = ( ( sem % 10 ) + 48 );
-    len = genoutput( str, "B: awake and signalling semid ", strnum, "\n" );
+
+    len = sprintf( str, "B: signal semid %d\n", sem );
     write( CONSOLE, str, len );
-    strnum[1] = NULLCH;
 
     if ( signal( sem ) == SYSERR )
         return;
 
-    len = genoutput( str, "B: going to sleep for 2 sec ", "", "\n" );
+
+    len = sprintf( str, "B: sleep 2 sec\n" );
     write( CONSOLE, str, len );
 
     if ( sleep( 2 ) == SYSERR )
         return;
 
 
-    strnum[0] = ( pid + 48 );
-    len = genoutput( str, "B: awake and sending msg 9 to pid ",
-                     strnum, "\n" );
+    len = sprintf( str, "B: msg 9 to pid %d\n", pid );
     write( CONSOLE, str, len );
 
     short msg = 9;
@@ -154,13 +153,14 @@ void funcB( int sem, int pid )
         return;
 
 
-    len = genoutput( str, "B: going to sleep for 2 sec ", "", "\n" );
+    len = sprintf( str, "B: sleep 2 sec\n" );
     write( CONSOLE, str, len );
 
     if ( sleep( 2 ) == SYSERR )
         return;
 
-    len = genoutput( str, "B: awake and now terminating ", "", "\n" );
+
+    len = sprintf( str, "B: finished\n" );
     write( CONSOLE, str, len );
 
 
@@ -176,31 +176,29 @@ void funcC( int pid, int seconds )
 
     unsigned len;
     char str[BUFFLEN];
-    char strnum[3] = { 0, NULLCH, NULLCH };
+    memset( str, 0, BUFFLEN );
 
-    strnum[0] = ( getpid( ) + 48 );
-    len = genoutput( str, "C: process C with pid ", strnum, " alive\n" );
+    len = sprintf( str, "C: pid %d alive\n", getpid( ) );
     write( CONSOLE, str, len );
 
-    strnum[0] = ( ( seconds / 10 ) + 48 );
-    strnum[1] = ( ( seconds % 10 ) + 48 );
-    len = genoutput( str, "C: going to sleep for ", strnum, " seconds\n" );
+
+
+    len = sprintf( str, "C: sleep %d sec\n", seconds );
     write( CONSOLE, str, len );
-    strnum[1] = NULLCH;
+
 
     if ( sleep( seconds ) == SYSERR )
         return SYSERR;
 
-    strnum[0] = ( pid + 48 );
-    len = genoutput( str, "C: awake; now resuming pid ",
-                     strnum, "\n" );
+
+    len = sprintf( str, "C: resume pid %d\n", pid );
     write( CONSOLE, str, len );
 
 
     if ( resume( pid ) == SYSERR )
         return SYSERR;
 
-    len = genoutput( str, "C: now terminating ", "", "\n" );
+    len = sprintf( str, "C: finished\n" );
     write( CONSOLE, str, len );
 
     return;
@@ -213,14 +211,15 @@ void CLI( int a1, int a2 )
 
 
     char str[BUFFLEN];
-    char argstr[BUFFLEN];
+
     memset( str, 0, BUFFLEN );
-    memset( argstr, 0, BUFFLEN );
+
     unsigned len;
-    unsigned arglen;
 
 
-    len = genoutput( str, "CLI: started and initializing CLI", "", "\n" );
+
+
+    len = sprintf( str, "CLI: started and initializing\n" );
     write( CONSOLE, str, len );
 
     PRINTPROMPT( );
@@ -392,7 +391,7 @@ void CLI( int a1, int a2 )
                 break;
 
             default:
-                goto JUNK_;
+                ;
 
 
         }
@@ -412,11 +411,11 @@ void initial_process( )
     int pidA, pidB, pidC;
     unsigned len;
     char str[BUFFLEN];
-    char strnum[3] = { 0, NULLCH, NULLCH };
+    memset( str, 0, BUFFLEN );
 
-    strnum[0] = ( getpid( ) + 48 );
-    len = genoutput( str, "INIT: initial process with pid ", strnum, " alive\n" );
 
+    //len = sprintf( str, "INIT: initial process with pid %d alive\n", getpid( ) );
+    len = sprintf( str, "INIT %d\n", getpid( ) );
     write( CONSOLE, str, len );
 
     if ( ( semid = screate( 0 ) ) == SYSERR )
@@ -440,49 +439,44 @@ void initial_process( )
         return;
 
 
-    len = genoutput( str, "INIT: process A , B, C created", "", "\n" );
+
+    len = sprintf( str, "INIT: A,B,C created\n" );
     write( CONSOLE, str, len );
 
-    len = genoutput( str, "INIT: starting CLI", "", "\n" );
-    write( CONSOLE, str, len );
 
-
+    //  resume( pidCLI ) == SYSERR
     if ( resume( pidA ) == SYSERR ||
          resume( pidB ) == SYSERR ||
          resume( pidC ) == SYSERR ||
          resume( pidCLI ) == SYSERR ) {
-        write( CONSOLE, "INIT ERROR1\n", strlen( "INIT ERROR1\n" ) );
+
+        len = sprintf( str, "INIT: ERROR" );
+        write( CONSOLE, str, len );
         return;
     }
 
 
-
-
-    len = genoutput( str, "INIT: about to suspend myself\n", "", "" );
+    len = sprintf( str, "INIT: suspend\n" );
     write( CONSOLE, str, len );
 
     if ( suspend( getpid( ) ) == SYSERR ) {
-        write( CONSOLE, "INIT ERROR2\n", strlen( "INIT ERROR2\n" ) );
+
+        len = sprintf( str, "INIT: ERROR\n" );
+        write( CONSOLE, str, len );
         return;
     }
 
 
-
-    len = genoutput( str, "INIT: I've been resumed", "", "\n" );
+    len = sprintf( str, "INIT: resumed\n" );
     write( CONSOLE, str, len );
 
 
-    while ( numproc > 2 ) {
 
 
-        sleep( 3 );
-    }
-
-    len = genoutput( str, "INIT: only initial proc and idle proc remaining. ",
-                     "", "terminating\n" );
+    len = sprintf( str, "INIT: finished\n" );
     write( CONSOLE, str, len );
 
-    shutdown = TRUE;
+
 
     return;
 }

@@ -19,6 +19,7 @@ SYSCALL signaln( int sem, int count )
     disable( &PS );
     if ( isbadsem( sem ) || semaph[sem].sstate == SFREE || count <= 0 ) {
         restore( &PS );
+        handle_error( "semsignaln: " );
         return (SYSERR );
     }
     sptr = &semaph[sem];

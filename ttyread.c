@@ -14,7 +14,7 @@ LOCAL int readcopy( );
  */
 int ttyread( struct devsw *devptr, char *buff, int count )
 {
-    char ps;
+
     register struct tty *iptr;
     int avail, nread;
     sigset_t PS;

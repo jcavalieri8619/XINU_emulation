@@ -13,7 +13,9 @@
 SYSCALL scount( int sem )
 {
 
-    if ( isbadsem( sem ) || semaph[sem].sstate == SFREE )
+    if ( isbadsem( sem ) || semaph[sem].sstate == SFREE ) {
+        handle_error( "semcount: " );
         return (SYSERR );
+    }
     return (semaph[sem].semcnt );
 }

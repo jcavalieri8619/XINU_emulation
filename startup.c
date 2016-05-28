@@ -8,8 +8,7 @@ int main( int argc, char** argv )
 
 
 
-    nulluser( );
-
+    sysinit( ); /* initialize all of Xinu */
 
 
 

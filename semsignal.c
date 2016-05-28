@@ -15,11 +15,12 @@
 SYSCALL signal( register int sem )
 {
     register struct sentry *sptr;
-    char ps;
+
     sigset_t PS;
     disable( &PS );
     if ( isbadsem( sem ) || ( sptr = &semaph[sem] )->sstate == SFREE ) {
         restore( &PS );
+        handle_error( "semsignal: " );
         return (SYSERR );
     }
     if ( ( sptr->semcnt++ ) < 0 )

@@ -14,13 +14,13 @@
 SYSCALL sreset( int sem, int count )
 {
     struct sentry *sptr;
-    char ps;
     int pid;
     int slist;
     sigset_t PS;
     disable( &PS );
     if ( isbadsem( sem ) || count < 0 || semaph[sem].sstate == SFREE ) {
         restore( &PS );
+        handle_error( "semreset: " );
         return (SYSERR );
     }
     sptr = &semaph[sem];

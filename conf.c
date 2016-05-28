@@ -5,18 +5,10 @@
 
 /* device independent I/O switch */
 
+struct devsw dev = { };
+
 struct devsw devtab[NDEVS] = {
 
-                              /*  Format of entries is:
-    device-number,
-    init, open, close,
-    read, write, seek,
-    getc, putc, cntl,
-    device-csr-address, input-vector, output-vector,
-    iint-handler, oint-handler, control-block, minor-device,
-     */
-
-                              /*  CONSOLE  is tty  */
 
                               0,
                               ttyinit, ttyopen, ionull,
@@ -28,3 +20,13 @@ struct devsw devtab[NDEVS] = {
 };
 
 
+/*  Format of entries is:
+device-number,
+init, open, close,
+read, write, seek,
+getc, putc, cntl,
+device-csr-address, input-vector, output-vector,
+iint-handler, oint-handler, control-block, minor-device,
+ */
+
+/*  CONSOLE  is tty  */

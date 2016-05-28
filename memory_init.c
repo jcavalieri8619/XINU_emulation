@@ -2,7 +2,7 @@
 #include <mem.h>
 #include <stdlib.h>
 
-const unsigned int RAMSIZE = 2500000;
+const unsigned int RAMSIZE = 90500000;
 int *maxaddr; /* max memory address		*/
 int *minaddr;
 

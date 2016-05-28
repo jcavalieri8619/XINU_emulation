@@ -19,10 +19,10 @@ INTPROC ttyoin( register struct tty *iptr )
     cptr = iptr->ioaddr;
     if ( iptr->ehead != iptr->etail ) {
         cptr->ctbuf = iptr->ebuff[iptr->etail++];
-
+        cptr->ctstat = cptr->ctstat | SLUREADYON;
         if ( iptr->etail >= EBUFLEN )
             iptr->etail = 0;
-        cptr->ctstat = cptr->ctstat | SLUREADYON;
+
         return;
     }
     if ( iptr->oheld ) { /* honor flow control	*/
@@ -31,6 +31,7 @@ INTPROC ttyoin( register struct tty *iptr )
     }
     if ( ( ct = scount( iptr->osem ) ) < OBUFLEN ) {
         cptr->ctbuf = iptr->obuff[iptr->otail++];
+        cptr->ctstat = cptr->ctstat | SLUREADYON;
         if ( iptr->otail >= OBUFLEN )
             iptr->otail = 0;
         if ( ct > OBMINSP )
@@ -39,8 +40,9 @@ INTPROC ttyoin( register struct tty *iptr )
             iptr->odsend = 0;
             signaln( iptr->osem, OBMINSP );
         }
-        cptr->ctstat = cptr->ctstat | SLUREADYON;
-    } else
+
+    } else {
         cptr->ctstat = SLUDISABLE;
+    }
     return;
 }

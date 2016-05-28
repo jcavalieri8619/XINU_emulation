@@ -4,6 +4,9 @@
 #include <kernel.h>
 #include <io.h>
 
+extern struct sigaction sigIOinterupts;
+extern void IOdispatcher( int signum );
+
 
 /*------------------------------------------------------------------------
  *  ioinit --  standard interrupt vector and dispatch initialization
@@ -25,7 +28,7 @@ int ioinit( int descrp )
  *  iosetvec  -  fill in interrupt vectors and dispatch table entries
  *------------------------------------------------------------------------
  */
-int iosetvec( int descrp, int incode, int outcode )
+int iosetvec( int descrp, void* incode, void* outcode )
 {
     struct devsw *devptr;
     struct intmap *map;
@@ -40,17 +43,23 @@ int iosetvec( int descrp, int incode, int outcode )
     map->iout = devptr->dvoint; /*   interrupt handlers and	*/
     map->ocode = outcode; /*   minor device numbers	*/
 
+    sigIOinterupts.sa_handler = IOdispatcher;
+    sigIOinterupts.sa_mask = DISABLE_INTERUPTS;
+    sigIOinterupts.sa_flags = SA_RESTART;
+
+
+    if ( sigaction( devtab[CONSOLE].dvivec, &sigIOinterupts,
+                    (struct sigaction *) NULL ) == -1 ) {
+        handle_error( "sigaction: " );
+    }
+
+
+    if ( sigaction( devtab[CONSOLE].dvovec, &sigIOinterupts,
+                    (struct sigaction *) NULL ) == -1 ) {
+        handle_error( "sigaction: " );
+    }
+
+
+
     return (OK );
 }
-
-
-
-
-/*
-    vptr = (struct vector *) devptr->dvivec;
-    vptr->vproc = (char *) INTVECI;
-    vptr->vps = descrp | DISABLE;
-    vptr = (struct vector *) devptr->dvovec;
-    vptr->vproc = (char *) INTVECO;
-    vptr->vps = descrp | DISABLE;
- */

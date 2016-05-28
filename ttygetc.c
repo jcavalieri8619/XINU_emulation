@@ -10,9 +10,9 @@
  *  ttygetc - read one character from a tty device
  *------------------------------------------------------------------------
  */
-ttygetc( struct devsw *devptr )
+int ttygetc( struct devsw *devptr )
 {
-    char ps;
+
     int ch;
     struct tty *iptr;
     sigset_t PS;

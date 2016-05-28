@@ -14,7 +14,7 @@
  */
 SYSCALL wait( int sem )
 {
-    char ps;
+
     register struct sentry *sptr;
     register struct pentry *pptr;
     sigset_t PS;
@@ -22,7 +22,7 @@ SYSCALL wait( int sem )
     disable( &PS );
     if ( isbadsem( sem ) || ( sptr = &semaph[sem] )->sstate == SFREE ) {
         restore( &PS );
-
+        handle_error( "semwait: " );
         return (SYSERR );
     }
     if ( --( sptr->semcnt ) < 0 ) {

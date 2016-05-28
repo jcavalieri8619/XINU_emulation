@@ -19,6 +19,7 @@ SYSCALL *getmem( unsigned nbytes )
     disable( &PS );
     if ( nbytes == 0 || memlist.mnext == NULL ) {
         restore( &PS );
+        handle_error( "getmem: " );
         return ( (int *) SYSERR );
     }
     nbytes = (unsigned) roundew( nbytes );
@@ -36,5 +37,6 @@ SYSCALL *getmem( unsigned nbytes )
             return ( (int *) p );
         }
     restore( &PS );
+    handle_error( "getmem: " );
     return ( (int *) SYSERR );
 }

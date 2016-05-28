@@ -23,6 +23,7 @@ int preempt; /* preemption counter.	Current process */
 /* is preempted when it reaches zero;	*/
 /* set in resched; counts in ticks	*/
 int clkruns = TRUE; /* set TRUE iff clock exists by setclkr	*/
+extern struct sigaction sigClockinterupt;
 
 #else
 int clkruns = FALSE; /* no clock configured; be sure sleep	*/
@@ -40,6 +41,25 @@ int clkinit( )
 
     struct itimerval quantum;
 
+
+
+    preempt = QUANTUM; /* initial time quantum		*/
+    count6 = 6; /* 60ths of a sec. counter	*/
+    slnempty = FALSE; /* initially, no process asleep	*/
+    sltop = NULL;
+    clkdiff = 0; /* zero deferred ticks		*/
+    defclk = 0; /* clock is not deferred	*/
+    clockq = newqueue( ); /* allocate clock queue in q	*/
+
+    sigClockinterupt.sa_handler = clkint;
+    sigClockinterupt.sa_mask = DISABLE_INTERUPTS;
+    sigClockinterupt.sa_flags = SA_RESTART;
+
+
+    if ( sigaction( SIGVTALRM, &sigClockinterupt, (struct sigaction *) 0 ) == -1 ) {
+        handle_error( "sigaction: " );
+    }
+
     quantum.it_interval.tv_sec = 0;
     quantum.it_interval.tv_usec = 1000;
     quantum.it_value.tv_sec = 0;
@@ -54,12 +74,8 @@ int clkinit( )
 
     }
 
-    preempt = QUANTUM; /* initial time quantum		*/
-    count6 = 6; /* 60ths of a sec. counter	*/
-    slnempty = FALSE; /* initially, no process asleep	*/
-    sltop = NULL;
-    clkdiff = 0; /* zero deferred ticks		*/
-    defclk = 0; /* clock is not deferred	*/
-    clockq = newqueue( ); /* allocate clock queue in q	*/
+
+
+
     return;
 }

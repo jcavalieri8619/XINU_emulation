@@ -87,7 +87,7 @@ int show_ready_Q( )
 
 
     if ( isempty( rdyhead ) ) {
-        len = sprintf( str, "READY QUEUE EMPTY --> IDLE THREAD IS CURRENT\n" );
+        len = sprintf( str, "READY q EMPTY --> IDLE THREAD IS CURRENT\n" );
         write( CONSOLE, str, len );
 
         return OK;
@@ -97,7 +97,7 @@ int show_ready_Q( )
     while ( ( rdy_indx = q[rdy_indx].qnext ) < NPROC ) {
 
 
-        len = sprintf( str, "PROC %d HAS PRIORITY %d ON READY QUEUE\n",
+        len = sprintf( str, "PROC %d HAS PRIORITY %d ON READY q\n",
                        rdy_indx, q[rdy_indx].qkey );
 
 
@@ -127,14 +127,14 @@ int show_sleep_Q( )
 
     while ( ( slp_indx = q[slp_indx].qnext ) < NPROC ) {
 
-        len = sprintf( str, "PROC %d HAS TIME-DELTA %d ON SLEEP QUEUE\n",
+        len = sprintf( str, "PROC %d HAS TIME-DELTA %d ON SLEEP q\n",
                        slp_indx, q[slp_indx].qkey );
         write( CONSOLE, str, len );
 
     }
 
     if ( !slnempty ) {
-        len = sprintf( str, "SLEEP QUEUE EMPTY\n" );
+        len = sprintf( str, "SLEEP q EMPTY\n" );
         write( CONSOLE, str, len );
 
     }

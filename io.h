@@ -3,12 +3,6 @@
 #ifndef _IO_H
 #define _IO_H
 
-#define INTVECI inint  /* input interrupt dispatch routine	*/
-#define INTVECO outint  /* output interrupt dispatch routine	*/
-extern int INTVECI( );
-extern int INTVECO( );
-extern void ioint( );
-
 
 struct intmap
 { /* device-to-interrupt routine mapping	*/

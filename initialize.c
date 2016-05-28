@@ -41,7 +41,7 @@ int nextqueue; /* next slot in q structure to use	*/
 extern int *maxaddr; /* max memory address (set by sizmem)	*/
 extern const int RAMSIZE; /*total size of system RAM */
 struct mblock memlist; /* list of free memory blocks		*/
-
+ucontext_t context_init;
 struct csr *tty0_csr;
 
 #ifdef NDEVS
@@ -86,27 +86,30 @@ char vers[] = VERSION; /* Xinu version printed at startup	*/
  *------------------------------------------------------------------------
  */
 
-LOCAL int sysinit( )
+extern int sysinit( )
 {
     int i;
-    struct pentry *pptr;
     struct sentry *sptr;
     struct mblock *mptr;
     const char * idleName = "IDLE";
+    struct pentry *pptr;
+    int shmid;
+
+
+
+    if ( SYSERR == meminit( ) ||
+         SYSERR == interuptinit( ) ) {
+        handle_error( "sysinit: " );
+        return SYSERR;
+    }
+
+
     numproc = 0; /* initialize system variables */
     nextproc = NPROC - 1;
     nextsem = NSEM - 1;
     nextqueue = NPROC; /* q[0..NPROC-1] are processes */
 
 
-    int shmid;
-
-
-
-
-    if ( SYSERR == meminit( ) ||
-         SYSERR == interuptinit( ) )
-        return SYSERR;
 
     memlist.mnext = mptr = /* initialize free memory list */
             (struct mblock *) roundew( minaddr );
@@ -119,9 +122,10 @@ LOCAL int sysinit( )
 
 
 
-
     for ( i = 0; i < NPROC; i++ ) /* initialize process table */
         proctab[i].pstate = PRFREE;
+
+
 
     pptr = &proctab[NULLPROC]; /* initialize null process entry */
     pptr->pstate = PRCURR;
@@ -139,27 +143,9 @@ LOCAL int sysinit( )
     pptr->pargs = 0;
     numproc++;
 
-    if ( getcontext( &pptr->run_env ) == -1 ) {
-        handle_error( "getcontext: " );
-    }
-
-    if ( getcontext( &pptr->rtn_env ) == -1 ) {
-        handle_error( "getcontext: " );
-    }
-
-
-    stack_t stackobj = { .ss_sp = pptr->pbase - NULLSTK + 1,
-                        .ss_flags = 0,
-                        .ss_size = pptr->pstklen };
-
-    pptr->run_env.uc_stack = stackobj;
-
-
-    makecontext( &pptr->run_env, nulluser, 0 );
 
 
 
-    currpid = NULLPROC;
 
     for ( i = 0; i < NSEM; i++ ) { /* initialize semaphores */
         ( sptr = &semaph[i] )->sstate = SFREE;
@@ -186,7 +172,8 @@ LOCAL int sysinit( )
 
 
     tty0_csr->crstat = SLUENABLE;
-    tty0_csr->ctstat = SLUENABLE;
+    tty0_csr->ctstat = SLUDISABLE;
+
     tty0_csr->crbuf = 0;
     tty0_csr->ctbuf = 0;
 
@@ -194,9 +181,42 @@ LOCAL int sysinit( )
     devtab[CONSOLE].dvcsr = tty0_csr;
 
 
+    init( CONSOLE );
 
 
 
+
+
+    if ( getcontext( &context_init ) == -1 ) {
+        handle_error( "getcontext: " );
+    }
+
+    pptr->run_env = context_init;
+
+    /*
+        if ( getcontext( &pptr->rtn_env ) == -1 ) {
+            handle_error( "getcontext: " );
+        }
+     */
+
+
+    stack_t stackobj = { .ss_sp = pptr->pbase - NULLSTK + 1,
+                        .ss_flags = 0,
+                        .ss_size = pptr->pstklen };
+
+    pptr->run_env.uc_stack = stackobj;
+
+
+    makecontext( &pptr->run_env, nulluser, 0 );
+
+    currpid = NULLPROC;
+
+    if ( setcontext( &pptr->run_env ) == -1 ) {
+        handle_error( "getcontext: " );
+    }
+
+
+    //unreachable
     return (OK );
 }
 
@@ -213,42 +233,26 @@ void nulluser( ) /* babysit CPU when no one home */
 
 
 
-    sysinit( ); /* initialize all of Xinu */
-
-
-
-    init( CONSOLE );
-
-
-
-
-
-    enable( ); /* enable interrupts */
-
 
     /* create a process to execute the user's main program */
 
-
     userpid = create( initial_process, INITSTK, INITPRIO, INITNAME, INITARGC );
-
-
 
     resume( userpid );
 
 
 
 
-
     while ( TRUE ) { /* run forever without actually */
 
-        char s[BUFFLEN];
-        int len;
+
 
         if ( shutdown == TRUE ) {
-
+            char s[BUFFLEN];
+            int len;
             len = sprintf( s, "IDLE: system shutting down\n" );
             write( CONSOLE, s, len );
-            return ( OK );
+            return;
         }
     }
 

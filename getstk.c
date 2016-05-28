@@ -19,6 +19,7 @@ SYSCALL *getstk( unsigned int nbytes )
     disable( &PS );
     if ( nbytes == 0 ) {
         restore( &PS );
+        handle_error( "getstk: " );
         return ( (int *) SYSERR );
     }
     nbytes = (unsigned) roundew( nbytes );
@@ -33,6 +34,7 @@ SYSCALL *getstk( unsigned int nbytes )
         }
     if ( fits == NULL ) {
         restore( &PS );
+        handle_error( "getstk: " );
         return ( (int *) SYSERR );
     }
     if ( nbytes == ( len = fits->mlen ) ) {

@@ -1,7 +1,12 @@
 /* conf.h (GENERATED FILE; DO NOT EDIT) */
 
-#define NULLPTR (void *)0
+#ifndef CONF_H
+#define CONF_H
+
+#define NULLPTR NULL
 #include <slu.h>
+#include <kernel.h>
+#include <tty.h>
 
 
 /* Device table declarations */
@@ -20,8 +25,8 @@ struct devsw
     struct csr* dvcsr;
     int dvivec;
     int dvovec;
-    int (*dviint )( );
-    int (*dvoint )( );
+    void (*dviint )( );
+    void (*dvoint )( );
     void *dvioblk;
     int dvminor;
 };
@@ -52,38 +57,38 @@ extern struct devsw devtab[]; /* one entry per device */
 
 /* Declarations of I/O routines referenced */
 
-extern int ttyinit( );
-extern int ttyopen( );
+extern int ttyinit( struct devsw *devptr );
+extern int ttyopen( struct devsw *devptr, char *nam, char *mode );
 extern int ionull( );
-extern int ttyread( );
-extern int ttywrite( );
+extern int ttyread( struct devsw *devptr, char *buff, int count );
+extern int ttywrite( struct devsw *devptr, char *buff, int count );
 extern int ioerr( );
-extern int ttycntl( );
-extern int ttygetc( );
-extern int ttyputc( struct devsw *, char );
-extern int ttyiin( );
-extern int ttyoin( );
-extern int dlcinit( );
-extern int dlcread( );
-extern int dlcwrite( );
-extern int dlccntl( );
-extern int dlcputc( );
-extern int dlciin( );
-extern int dlcoin( );
-extern int dsinit( );
-extern int dsopen( );
-extern int dsread( );
-extern int dswrite( );
-extern int dsseek( );
-extern int dscntl( );
-extern int dsinter( );
-extern int lfinit( );
-extern int lfclose( );
-extern int lfread( );
-extern int lfwrite( );
-extern int lfseek( );
-extern int lfgetc( );
-extern int lfputc( );
+extern int ttycntl( struct devsw *devptr, int func, char *addr );
+extern int ttygetc( struct devsw *devptr );
+extern int ttyputc( struct devsw *devptr, char ch );
+extern INTPROC ttyiin( struct tty *iptr );
+extern INTPROC ttyoin( struct tty *iptr );
+//extern int dlcinit( );
+//extern int dlcread( );
+//extern int dlcwrite( );
+//extern int dlccntl( );
+//extern int dlcputc( );
+//extern int dlciin( );
+//extern int dlcoin( );
+//extern int dsinit( );
+//extern int dsopen( );
+//extern int dsread( );
+//extern int dswrite( );
+//extern int dsseek( );
+//extern int dscntl( );
+//extern int dsinter( );
+//extern int lfinit( );
+//extern int lfclose( );
+//extern int lfread( );
+//extern int lfwrite( );
+//extern int lfseek( );
+//extern int lfgetc( );
+//extern int lfputc( );
 
 /* Configuration and Size Constants */
 
@@ -97,3 +102,6 @@ extern int lfputc( );
 #ifndef NSEM
 #define NSEM     50   /* number of semaphores		*/
 #endif
+
+#endif // CONF_H
+

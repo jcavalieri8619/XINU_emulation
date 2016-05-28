@@ -24,6 +24,7 @@ SYSCALL resume( int pid )
     disable( &PS );
     if ( isbadpid( pid ) || ( pptr = &proctab[pid] )->pstate != PRSUSP ) {
         restore( &PS );
+        handle_error( "resume: " );
         return (SYSERR );
     }
     prio = pptr->pprio;

@@ -36,9 +36,10 @@ SYSCALL create( void (*procaddr )( ), /* procedure address            */
     int i;
     int *a; /* points to list of args	*/
     int *saddr; /* stack address		*/
+    int *link_saddr;
 
 
-    int INITRET( );
+    void INITRET( );
 
     sigset_t PS;
 
@@ -51,12 +52,15 @@ SYSCALL create( void (*procaddr )( ), /* procedure address            */
     if ( ssize < MINSTK ||
          ( pid = newpid( ) ) == SYSERR ||
          priority < 1 ||
-         (int) ( saddr = getstk( ssize ) ) == SYSERR ) {
+         ( (int) ( saddr = getstk( ssize ) ) == SYSERR ) ||
+         ( (int) ( link_saddr = getstk( MINSTK ) ) == SYSERR ) ) {
 
         restore( &PS );
+        handle_error( "create: " );
 
         return (SYSERR );
     }
+
 
     numproc++;
     pptr = &proctab[pid];
@@ -68,6 +72,7 @@ SYSCALL create( void (*procaddr )( ), /* procedure address            */
 
     pptr->pstklen = ssize;
     pptr->pbase = saddr;
+
     pptr->psem = 0;
     pptr->phasmsg = FALSE;
     pptr->plimit = ( (int) pptr->pbase - ssize + sizeof (int ) );
@@ -75,22 +80,24 @@ SYSCALL create( void (*procaddr )( ), /* procedure address            */
     pptr->paddr = procaddr;
 
 
-    if ( getcontext( &pptr->run_env ) == -1 ) {
+    pptr->run_env = context_init;
 
-        handle_error( "getcontext: " );
-    }
+    pptr->rtn_env = context_init;
 
-    if ( getcontext( &pptr->rtn_env ) == -1 ) {
 
-        handle_error( "getcontext: " );
-    }
 
 
     stack_t stackobj = { .ss_sp = ( pptr->pbase - ssize + 1 ),
                         .ss_flags = 0,
                         .ss_size = pptr->pstklen };
 
-    pptr->rtn_env.uc_stack = pptr->run_env.uc_stack = stackobj;
+    stack_t link_stackobj = { .ss_sp = ( link_saddr - MINSTK + 1 ),
+                             .ss_flags = 0,
+                             .ss_size = MINSTK };
+
+
+    pptr->run_env.uc_stack = stackobj;
+    pptr->rtn_env.uc_stack = link_stackobj;
 
 
 

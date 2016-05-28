@@ -18,7 +18,7 @@
 #define IBUFLEN  128  /* num.	chars in input queue	*/
 #endif
 #ifndef OBUFLEN
-#define OBUFLEN  64  /* num.	chars in output	queue	*/
+#define OBUFLEN  464  /* num.	chars in output	queue	*/
 #endif
 
 /* mode constants */

@@ -1,2 +1,7 @@
 some of the code in here is original source code from the XINU book. 
 The rest is my modifications to make it run as an emulation on linux
+
+Includes CLI with capability to create processes, suspend, kill, put to sleep,
+create semaphores, wait on semaphores, send messages. 
+
+No filesystem.

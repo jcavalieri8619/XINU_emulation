@@ -4,4 +4,7 @@ The rest is my modifications to make it run as an emulation on linux
 Includes CLI with capability to create processes, suspend, kill, put to sleep,
 create semaphores, wait on semaphores, send messages. 
 
+Processes are created with a custom thread package using the u_context set 
+of fuctions on linux e.g. makecontext, swapcontext...
+
 No filesystem.
